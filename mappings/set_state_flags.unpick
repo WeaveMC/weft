@@ -1,0 +1,10 @@
+v1
+
+flag set_state_flags io/github/daomephsta/weft/world/SetStateFlags CAUSE_BLOCK_UPDATE
+flag set_state_flags io/github/daomephsta/weft/world/SetStateFlags SEND_TO_CLIENT
+flag set_state_flags io/github/daomephsta/weft/world/SetStateFlags DO_NOT_RERENDER
+flag set_state_flags io/github/daomephsta/weft/world/SetStateFlags RERENDER_ON_MAIN
+flag set_state_flags io/github/daomephsta/weft/world/SetStateFlags UNOBSERVABLE
+
+#      net/minecraft/world/World setBlockState (Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z
+unpick net/minecraft/class_1945  method_8652   (Lnet/minecraft/class_2338;Lnet/minecraft/class_2680;I)Z 			  3 set_state_flags
