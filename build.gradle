@@ -64,6 +64,7 @@ class MethodKey
 Map<MethodKey, String> methodMappings = [:]
 
 task loadIntermediary(dependsOn: invertIntermediary) {doLast{
+    logger.lifecycle(':loading inverted intermediary')
     invertIntermediary.fileOutput.eachLine 
     { line -> 
         String[] tokens = line.split('\t')
@@ -123,6 +124,7 @@ task remapIntermediaryToObf(dependsOn: loadIntermediary, type: Copy) {
         }
         return line
     }
+    doLast {logger.lifecycle(':remapping unpick definitions from intermediary to obf')}
 }
 
 task buildMappings(dependsOn: remapIntermediaryToObf, type: Zip) {
@@ -130,6 +132,7 @@ task buildMappings(dependsOn: remapIntermediaryToObf, type: Zip) {
     from "$project.buildDir/mappings/obf/"
     destinationDir = file("$project.buildDir/mappings/final")
     baseName = "unpick-${minecraft_version}"
+    doLast {logger.lifecycle(':packaging definitions into zip')}
 }
 
 class FileOutput extends DefaultTask {
