@@ -38,6 +38,8 @@ import com.google.common.net.UrlEscapers
 import groovy.transform.TupleConstructor
 import groovy.transform.Canonical
 import net.fabricmc.stitch.commands.CommandReorderTiny
+import java.util.regex.Pattern
+import java.util.regex.Matcher
 
 task downloadIntermediary(type: Download) {
 	src UrlEscapers.urlFragmentEscaper().escape("https://github.com/FabricMC/intermediary/raw/master/mappings/${minecraft_version}.tiny")
@@ -103,7 +105,8 @@ task loadIntermediary(dependsOn: invertIntermediary) {doLast{
     }
 }}
 
-java.util.regex.Pattern whitespaceSplitter = ~/\s/
+Pattern whitespaceSplitter = ~/\s/
+Pattern objectSignatureFinder = ~'L([a-zA-Z0-9$_\\/]+);'
 task remapIntermediaryToObf(dependsOn: loadIntermediary, type: Copy) {
     from 'mappings'
     into "$project.buildDir/mappings/obf"
@@ -133,6 +136,13 @@ task remapIntermediaryToObf(dependsOn: loadIntermediary, type: Copy) {
                     tokens[2] = methodMappings.get(new MethodKey(owner, name, descriptor))
                     changed = true
                 }
+				Matcher objectSignatureMatcher = objectSignatureFinder.matcher(descriptor)
+				while(objectSignatureMatcher.find())
+				{
+					def objectSignature = objectSignatureMatcher.group(1)
+					tokens[3] = tokens[3].replace(objectSignature, classMappings.get(objectSignature))
+					changed = true
+				}
                 return changed ? String.join(' ', tokens) : line
             }
             return line
