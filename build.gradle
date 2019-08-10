@@ -13,11 +13,26 @@ buildscript {
 }
 
 plugins {
+	id 'base'
+	id 'maven-publish'
 	id 'de.undercouch.download' version '3.4.3'
 }
 
-def minecraft_version = "1.14.4"
-def cacheFilesMinecraft = file(".gradle/minecraft")
+def minecraft_version = '1.14.4'
+def cacheFilesMinecraft = file('.gradle/minecraft')
+
+archivesBaseName = 'weft'
+group = 'io.github.daomephsta'
+version = "${minecraft_version}+build.${build_number}"
+
+
+publishing {
+    publications {
+    	maven(MavenPublication) {
+            artifact weftZip
+    	}
+	}
+}
 
 import com.google.common.net.UrlEscapers
 import groovy.transform.TupleConstructor
@@ -127,11 +142,10 @@ task remapIntermediaryToObf(dependsOn: loadIntermediary, type: Copy) {
     doLast {logger.lifecycle(':remapping unpick definitions from intermediary to obf')}
 }
 
-task buildMappings(dependsOn: remapIntermediaryToObf, type: Zip) {
+task weftZip(dependsOn: remapIntermediaryToObf, type: Zip) {
 	outputs.upToDateWhen remapIntermediaryToObf.outputs.upToDateSpec
     from "$project.buildDir/mappings/obf/"
     destinationDir = file("$project.buildDir/mappings/final")
-    baseName = "unpick-${minecraft_version}"
     doLast {logger.lifecycle(':packaging definitions into zip')}
 }
 
