@@ -6,5 +6,5 @@ flag set_state_flags io/github/daomephsta/weft/world/SetStateFlags DO_NOT_REREND
 flag set_state_flags io/github/daomephsta/weft/world/SetStateFlags RERENDER_ON_MAIN
 flag set_state_flags io/github/daomephsta/weft/world/SetStateFlags UNOBSERVABLE
 
-#      net/minecraft/world/World setBlockState (Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z
-unpick net/minecraft/class_1945  method_8652   (Lnet/minecraft/class_2338;Lnet/minecraft/class_2680;I)Z 			  3 set_state_flags
+# net/minecraft/world/World setBlockState (Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z
+unpick net/minecraft/class_1945 method_8652 (Lnet/minecraft/class_2338;Lnet/minecraft/class_2680;I)Z 2 set_state_flags
