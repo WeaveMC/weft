@@ -13,7 +13,7 @@ buildscript {
 }
 
 plugins {
-	id 'base'
+	id 'java'
 	id 'maven-publish'
 	id 'de.undercouch.download' version '3.4.3'
 }
@@ -28,8 +28,11 @@ version = "${minecraft_version}+build.${build_number}"
 
 publishing {
     publications {
-    	maven(MavenPublication) {
-            artifact weftZip
+    	mappingZip(MavenPublication) {
+            artifact weftMappingZip
+    	}
+		constants(MavenPublication) {
+            artifact jar
     	}
 	}
 }
@@ -107,7 +110,7 @@ task loadIntermediary(dependsOn: invertIntermediary) {doLast{
 
 Pattern whitespaceSplitter = ~/\s/
 Pattern objectSignatureFinder = ~'L([a-zA-Z0-9$_\\/]+);'
-task remapIntermediaryToObf(dependsOn: loadIntermediary, type: Copy) {
+task remapIntermediaryToObf(dependsOn: loadIntermediary, type: Sync) {
     from 'mappings'
     into "$project.buildDir/mappings/obf"
 	outputs.upToDateWhen {false}
@@ -152,12 +155,15 @@ task remapIntermediaryToObf(dependsOn: loadIntermediary, type: Copy) {
     doLast {logger.lifecycle(':remapping unpick definitions from intermediary to obf')}
 }
 
-task weftZip(dependsOn: remapIntermediaryToObf, type: Zip) {
+task weftMappingZip(dependsOn: remapIntermediaryToObf, type: Zip) {
 	outputs.upToDateWhen remapIntermediaryToObf.outputs.upToDateSpec
     from "$project.buildDir/mappings/obf/"
+    from 'warp-config.xml'
     destinationDir = file("$project.buildDir/mappings/final")
     doLast {logger.lifecycle(':packaging definitions into zip')}
 }
+
+jar.classifier = 'constants'
 
 class FileOutput extends DefaultTask {
 	@OutputFile File fileOutput

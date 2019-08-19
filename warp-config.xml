@@ -1,0 +1,4 @@
+<config>
+	<constantSource mavenStyleId = "org.lwjgl:lwjgl-opengl:3.2.2"/>
+	<constantSource mavenStyleId = "io.github.daomephsta:weft:1.14.4+build.1:constants"/>
+</config>
