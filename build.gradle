@@ -5,10 +5,12 @@ buildscript {
 			name "Fabric Repository"
 			url 'https://maven.fabricmc.net'
 		}
+		mavenLocal()
 	}
 	dependencies {
 		classpath "net.fabricmc:stitch:0.2.1.61"
 		classpath "commons-io:commons-io:2.6"
+		classpath 'io.github.daomephsta:unpick-format-utils:2.0.0'
 	}
 }
 
@@ -38,11 +40,11 @@ publishing {
 }
 
 import com.google.common.net.UrlEscapers
-import groovy.transform.TupleConstructor
-import groovy.transform.Canonical
+import daomephsta.unpick.constantmappers.datadriven.parser.MethodKey
+import daomephsta.unpick.constantmappers.datadriven.parser.v2.UnpickV2Reader
+import daomephsta.unpick.constantmappers.datadriven.parser.v2.UnpickV2Remapper
+import daomephsta.unpick.constantmappers.datadriven.parser.v2.UnpickV2Writer
 import net.fabricmc.stitch.commands.CommandReorderTiny
-import java.util.regex.Pattern
-import java.util.regex.Matcher
 
 task downloadIntermediary(type: Download) {
 	src UrlEscapers.urlFragmentEscaper().escape("https://github.com/FabricMC/intermediary/raw/master/mappings/${minecraft_version}.tiny")
@@ -53,9 +55,7 @@ task invertIntermediary(dependsOn: downloadIntermediary, type: FileOutput) {
 	def inputFile = downloadIntermediary.dest
 
 	def outputFile = new File(cacheFilesMinecraft, "${minecraft_version}-intermediary-inverted.tiny")
-	outputs.file(outputFile)
 	fileOutput = outputFile
-
 	outputs.upToDateWhen {false}
 
 	doLast {
@@ -69,90 +69,39 @@ task invertIntermediary(dependsOn: downloadIntermediary, type: FileOutput) {
 		new CommandReorderTiny().run(args)
     }
 }
-Map<String, String> classMappings = [:]
-@Canonical
-class FieldKey
-{
-    String owner, name
+
+Map<String, String> toObfClassMappings = [:]
+Map<MethodKey, String> toObfMethodMappings = [:]
+
+task remapIntermediaryToObf(dependsOn: 'loadIntermediary', type: RemapUnpickDefinitions ) {
+	from = file('mappings')
+	into = file("$project.buildDir/mappings/obf")
+	classMappings = toObfClassMappings 
+	methodMappings = toObfMethodMappings
 }
-Map<FieldKey, String> fieldMappings = [:]
-@Canonical
-class MethodKey
-{
-    String owner, name, descriptor
-}
-Map<MethodKey, String> methodMappings = [:]
 
-task loadIntermediary(dependsOn: invertIntermediary) {doLast{
-    logger.lifecycle(':loading inverted intermediary')
-    invertIntermediary.fileOutput.eachLine 
-    { line -> 
-        String[] tokens = line.split('\t')
-        def type = tokens[0]
-
-        switch (type)
-        {
-            case 'CLASS':
-                def (intermediaryName, obfuscatedName) = tokens[1..2]
-                classMappings.put(intermediaryName, obfuscatedName)
-                break
-            case 'FIELD':
-                def (owner, descriptor, intermediaryName, obfuscatedName) = tokens[1..4]
-                fieldMappings.put(new FieldKey(owner, intermediaryName), obfuscatedName)
-                break
-            case 'METHOD':
-                def (owner, descriptor, intermediaryName, obfuscatedName) = tokens[1..4]
-                methodMappings.put(new MethodKey(owner, intermediaryName, descriptor), obfuscatedName)
-                break
-        }
+task loadIntermediary(dependsOn: invertIntermediary) {
+	outputs.upToDateWhen remapIntermediaryToObf.outputs.upToDateSpec
+	doLast {
+	    logger.lifecycle(':loading inverted intermediary')
+	    invertIntermediary.fileOutput.eachLine 
+	    { line -> 
+	        String[] tokens = line.split('\t')
+	        def type = tokens[0]
+	
+	        switch (type)
+	        {
+	            case 'CLASS':
+	                def (intermediaryName, obfuscatedName) = tokens[1..2]
+	                toObfClassMappings.put(intermediaryName, obfuscatedName)
+	                break
+	            case 'METHOD':
+	                def (owner, descriptor, intermediaryName, obfuscatedName) = tokens[1..4]
+	                toObfMethodMappings.put(new MethodKey(owner, intermediaryName, descriptor), obfuscatedName)
+	                break
+	        }
+	    }
     }
-}}
-
-Pattern whitespaceSplitter = ~/\s/
-Pattern objectSignatureFinder = ~'L([a-zA-Z0-9$_\\/]+);'
-task remapIntermediaryToObf(dependsOn: loadIntermediary, type: Sync) {
-    from 'mappings'
-    into "$project.buildDir/mappings/obf"
-	outputs.upToDateWhen {false}
-    filter 
-    { line -> 
-        if(line.startsWith('v') && line != 'v1')
-            throw new IllegalStateException("Cannot parse unpick format ${line}")
-        else if(line.isEmpty() || line.startsWith('#'))
-            return null //Remove empty lines and comments, as built mappings are not meant to be read by humans
-        else if(line != 'v1')
-        {
-            def tokens = whitespaceSplitter.split(line).toList()
-            tokens.retainAll {!it.isEmpty()}
-            if (tokens[0] == 'unpick')
-            {
-                def (owner, name, descriptor) = tokens[1..3];
-                //Check for intermediary names before remapping
-                boolean changed = false
-                if (owner.contains('class_'))
-                {
-                    tokens[1] = classMappings.get(owner)
-                    changed = true
-                }
-                if (name.startsWith('method_'))
-                {
-                    tokens[2] = methodMappings.get(new MethodKey(owner, name, descriptor))
-                    changed = true
-                }
-				Matcher objectSignatureMatcher = objectSignatureFinder.matcher(descriptor)
-				while(objectSignatureMatcher.find())
-				{
-					def objectSignature = objectSignatureMatcher.group(1)
-					tokens[3] = tokens[3].replace(objectSignature, classMappings.get(objectSignature))
-					changed = true
-				}
-                return changed ? String.join(' ', tokens) : line
-            }
-            return line
-        }
-        return line
-    }
-    doLast {logger.lifecycle(':remapping unpick definitions from intermediary to obf')}
 }
 
 task weftMappingZip(dependsOn: remapIntermediaryToObf, type: Zip) {
@@ -164,6 +113,31 @@ task weftMappingZip(dependsOn: remapIntermediaryToObf, type: Zip) {
 }
 
 jar.classifier = 'constants'
+
+class RemapUnpickDefinitions extends DefaultTask {
+	@InputDirectory File from
+	@OutputDirectory File into
+	Map<String, String> classMappings
+	Map<MethodKey, String> methodMappings
+	
+	@TaskAction
+	def doTask() {
+		//Clean output directory
+		into.deleteDir()
+		into.parentFile.mkdirs()
+		into.mkdir()
+		//Generate remapped files
+		from.eachFile { file ->
+			file.withInputStream { stream ->
+				new UnpickV2Reader(stream).withCloseable { unpickReader ->
+					def writer = new UnpickV2Writer()
+					unpickReader.accept(new UnpickV2Remapper(classMappings, methodMappings, writer))
+					new File(into, file.name).text = writer.output
+				}
+			}
+		}
+	}
+}
 
 class FileOutput extends DefaultTask {
 	@OutputFile File fileOutput
