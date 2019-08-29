@@ -74,6 +74,7 @@ Map<String, String> toObfClassMappings = [:]
 Map<MethodKey, String> toObfMethodMappings = [:]
 
 task remapIntermediaryToObf(dependsOn: 'loadIntermediary', type: RemapUnpickDefinitions ) {
+	outputs.upToDateWhen {false}
 	from = file('mappings')
 	into = file("$project.buildDir/mappings/obf")
 	classMappings = toObfClassMappings 
