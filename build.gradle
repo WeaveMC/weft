@@ -24,7 +24,7 @@ def minecraft_version = '1.14.4'
 def cacheFilesMinecraft = file('.gradle/minecraft')
 
 archivesBaseName = 'weft'
-group = 'io.github.daomephsta'
+group = 'io.github.weavemc'
 version = "${minecraft_version}+build.${build_number}"
 
 
