@@ -9,7 +9,7 @@ buildscript {
 	dependencies {
 		classpath "net.fabricmc:stitch:0.2.1.61"
 		classpath "commons-io:commons-io:2.6"
-		classpath 'io.github.daomephsta:unpick-format-utils:2.0.0'
+		classpath 'io.github.weavemc:unpick-format-utils:2.0.0+build.1'
 	}
 }
 
