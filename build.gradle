@@ -5,7 +5,6 @@ buildscript {
 			name "Fabric Repository"
 			url 'https://maven.fabricmc.net'
 		}
-		mavenLocal()
 	}
 	dependencies {
 		classpath "net.fabricmc:stitch:0.2.1.61"
@@ -25,10 +24,25 @@ def cacheFilesMinecraft = file('.gradle/minecraft')
 
 archivesBaseName = 'weft'
 group = 'io.github.weavemc'
-version = "${minecraft_version}+build.${build_number}"
+def ENV = System.getenv()
+version = "${minecraft_version}+build.unknown"
+if (ENV.BUILD_NUMBER) {
+	version = "${minecraft_version}+build.${ENV.BUILD_NUMBER}"
+}
 
 
 publishing {
+	repositories {
+        if (project.hasProperty('weavemc_pass')) {
+            maven {
+                url = 'http://deploy.modmuss50.me/'
+                credentials {
+                    username = 'weavemc'
+                    password = project.getProperty('weavemc_pass')
+                }
+            }
+        }
+    }
     publications {
     	mappingZip(MavenPublication) {
             artifact weftMappingZip
