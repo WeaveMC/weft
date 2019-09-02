@@ -45,7 +45,7 @@ publishing {
     }
     publications {
     	mappingZip(MavenPublication) {
-            artifact weftMappingZip
+            artifact weftWarpConfigurationZip
     	}
 		/*Currently no constants in library, so disable publishing
 		constants(MavenPublication) {
@@ -90,8 +90,8 @@ Map<MethodKey, String> toObfMethodMappings = [:]
 
 task remapIntermediaryToObf(dependsOn: 'loadIntermediary', type: RemapUnpickDefinitions ) {
 	outputs.upToDateWhen {false}
-	from = file('mappings')
-	into = file("$project.buildDir/mappings/obf")
+	from = file('unpick-definitions')
+	into = file("$project.buildDir/unpick-definitions/obf")
 	classMappings = toObfClassMappings 
 	methodMappings = toObfMethodMappings
 }
@@ -120,11 +120,11 @@ task loadIntermediary(dependsOn: invertIntermediary) {
     }
 }
 
-task weftMappingZip(dependsOn: remapIntermediaryToObf, type: Zip) {
+task weftWarpConfigurationZip(dependsOn: remapIntermediaryToObf, type: Zip) {
 	outputs.upToDateWhen remapIntermediaryToObf.outputs.upToDateSpec
-    from "$project.buildDir/mappings/obf/"
+    from "$project.buildDir/unpick-definitions/obf/"
     from 'warp-config.xml'
-    destinationDir = file("$project.buildDir/mappings/final")
+    destinationDir = file("$project.buildDir/unpick-definitions/final")
     doLast {logger.lifecycle(':packaging definitions into zip')}
 }
 
