@@ -129,7 +129,9 @@ task loadIntermediary(dependsOn: invertIntermediary) {
 task weftWarpConfigurationZip(dependsOn: remapIntermediaryToObf, type: Zip) {
 	outputs.upToDateWhen remapIntermediaryToObf.outputs.upToDateSpec
     from "$project.buildDir/unpick-definitions/obf/"
-    from 'warp-config.xml'
+    from ('warp-config.xml') {
+    	expand(['version': version])
+    }
     destinationDir = file("$project.buildDir/unpick-definitions/final")
     doLast {logger.lifecycle(':packaging definitions into zip')}
 }
