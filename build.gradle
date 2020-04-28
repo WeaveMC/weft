@@ -19,7 +19,7 @@ plugins {
 	id 'de.undercouch.download' version '3.4.3'
 }
 
-def minecraft_version = '1.14.4'
+def minecraft_version = '1.15.2'
 def cacheFilesMinecraft = file('.gradle/minecraft')
 
 archivesBaseName = 'weft'
