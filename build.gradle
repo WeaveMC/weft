@@ -47,10 +47,9 @@ publishing {
     	mappingZip(MavenPublication) {
             artifact weftWarpConfigurationZip
     	}
-		/*Currently no constants in library, so disable publishing
 		constants(MavenPublication) {
             artifact jar
-    	}*/
+    	}
 	}
 }
 
