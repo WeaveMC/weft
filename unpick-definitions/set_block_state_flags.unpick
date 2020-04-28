@@ -1,0 +1,12 @@
+v2
+
+flag set_block_state_flags io/github/weavemc/weft/world/SetBlockStateFlags PROPAGATE_CHANGE
+flag set_block_state_flags io/github/weavemc/weft/world/SetBlockStateFlags NOTIFY_LISTENERS
+flag set_block_state_flags io/github/weavemc/weft/world/SetBlockStateFlags NO_REDRAW
+flag set_block_state_flags io/github/weavemc/weft/world/SetBlockStateFlags REDRAW_ON_MAIN_THREAD
+flag set_block_state_flags io/github/weavemc/weft/world/SetBlockStateFlags FORCE_STATE
+flag set_block_state_flags io/github/weavemc/weft/world/SetBlockStateFlags SKIP_DROPS
+flag set_block_state_flags io/github/weavemc/weft/world/SetBlockStateFlags MOVED
+#ModifiableWorld.setBlockState(BlockPos, BlockState, int)
+target_method net/minecraft/class_1945 method_8652 (Lnet/minecraft/class_2338;Lnet/minecraft/class_2680;I)Z 
+	param 2 set_block_state_flags
