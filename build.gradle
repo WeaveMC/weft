@@ -30,6 +30,10 @@ if (ENV.BUILD_NUMBER) {
 	version = "${minecraft_version}+build.${ENV.BUILD_NUMBER}"
 }
 
+task sourceJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allJava
+}
 
 publishing {
 	repositories {
@@ -49,6 +53,9 @@ publishing {
     	}
 		constants(MavenPublication) {
             artifact jar
+    	}
+        constantsSource(MavenPublication) {
+            artifact sourceJar
     	}
 	}
 }
