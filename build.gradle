@@ -30,6 +30,10 @@ if (ENV.BUILD_NUMBER) {
 	version = "${minecraft_version}+build.${ENV.BUILD_NUMBER}"
 }
 
+task sourceJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allJava
+}
 
 publishing {
 	repositories {
@@ -47,10 +51,12 @@ publishing {
     	mappingZip(MavenPublication) {
             artifact weftWarpConfigurationZip
     	}
-		/*Currently no constants in library, so disable publishing
 		constants(MavenPublication) {
             artifact jar
-    	}*/
+    	}
+        constantsSource(MavenPublication) {
+            artifact sourceJar
+    	}
 	}
 }
 
@@ -123,7 +129,9 @@ task loadIntermediary(dependsOn: invertIntermediary) {
 task weftWarpConfigurationZip(dependsOn: remapIntermediaryToObf, type: Zip) {
 	outputs.upToDateWhen remapIntermediaryToObf.outputs.upToDateSpec
     from "$project.buildDir/unpick-definitions/obf/"
-    from 'warp-config.xml'
+    from ('warp-config.xml') {
+    	expand(['version': version])
+    }
     destinationDir = file("$project.buildDir/unpick-definitions/final")
     doLast {logger.lifecycle(':packaging definitions into zip')}
 }

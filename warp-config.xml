@@ -1,2 +1,3 @@
 <config>
+    <constantSource mavenStyleId = "io.github.weavemc:weft:${version}:constants"/>
 </config>
