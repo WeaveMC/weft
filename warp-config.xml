@@ -1,4 +1,3 @@
 <config>
     <constantSource mavenStyleId = "io.github.weavemc:weft:${version}:constants"/>
-    <constantSource mavenStyleId = "org.lwjgl:lwjgl-opengl:3.2.2"/>
 </config>
