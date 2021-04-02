@@ -1,4 +1,6 @@
 # Weft
+WeaveMC only existed for interim management of the project until Fabric was in a suitable state to integrate it directly into the toolchain. [FabricMC/yarn](https://github.com/FabricMC/yarn) now provides Unpick definitions. This project now exists only for historical reasons.
+
 Weft is an open source project project that aims to provide a set of [Unpick definitions](https://github.com/WeaveMC/unpick/wiki/Unpick-Format) that covers every inlined constant in the Minecraft: Java Edition codebase. The intent is to make it easier for modders to understand the decompiled code, making mod creation a little bit easier.
 
 ### Usage
